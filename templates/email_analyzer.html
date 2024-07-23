@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Header Analyzer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="container">
+        <center>
+        <p>Written by <a href="https://www.linkedin.com/in/njot/" target="_blank">Navjot Singh</a></p>
+        </center>
+        <h1 class="mt-4">Email Header Analyzer</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="email_text">Paste Email Headers:</label>
+                <textarea class="form-control" id="email_text" name="email_text" rows="10"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="email_file">Or Upload Email Header File:</label>
+                <input type="file" class="form-control-file" id="email_file" name="email_file">
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze Headers</button>
+        </form>
+        {% if headers %}
+        <hr>
+        <h2>Parsed Headers</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Header</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in headers.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <h2>Hop Information</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Hop</th>
+                    <th>Submitting Host</th>
+                    <th>Receiving Host</th>
+                    <th>Time</th>
+                    <th>Delay</th>
+                    <th>Type</th>
+                    <th>IP</th>
+                    <th>Geolocation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hop in hops %}
+                <tr>
+                    <td>{{ hop.hop }}</td>
+                    <td>{{ hop.submitting_host }}</td>
+                    <td>{{ hop.receiving_host }}</td>
+                    <td>{{ hop.time }}</td>
+                    <td>{{ hop.delay }}</td>
+                    <td>{{ hop.type }}</td>
+                    <td>{{ hop.ip }}</td>
+                    <td>
+                        {% if hop.location %}
+                        {% if hop.location.error %}
+                        {{ hop.location.error }}
+                        {% else %}
+                        {{ hop.location.city }}, {{ hop.location.region }}, {{ hop.location.country_name }}<br>
+                        Latitude: {{ hop.location.latitude }}, Longitude: {{ hop.location.longitude }}
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <h2>IP Information</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Header</th>
+                    <th>IP</th>
+                    <th>Geolocation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for info in ip_info %}
+                <tr>
+                    <td>{{ info.header }}</td>
+                    <td>{{ info.ip }}</td>
+                    <td>
+                        {% if info.location.error %}
+                        {{ info.location.error }}
+                        {% else %}
+                        {{ info.location.city }}, {{ info.location.region }}, {{ info.location.country_name }}<br>
+                        Latitude: {{ info.location.latitude }}, Longitude: {{ info.location.longitude }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if is_malicious %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Warning:</strong> This email appears to be malicious or a phishing attempt.
+        </div>
+        {% else %}
+        <div class="alert alert-success" role="alert">
+            This email appears to be safe.
+        </div>
+        {% endif %}
+        <p><strong>Disclaimer:</strong> The IP geolocation is based on real-time lookup and may not reflect the actual location at the time the email was sent.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
